@@ -1,7 +1,9 @@
 const ejs = require('ejs');
+const express = require('express');
 const Binance = require('node-binance-api');
 const TelegramBot = require('node-telegram-bot-api');
 const prettyjson = require('prettyjson');
+const app = express();
 
 require('dotenv').config();
 
@@ -10,8 +12,9 @@ const binance = new Binance().options({
   APISECRET: process.env.BINANCE_API_SECRET,
 });
 const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, { polling: true });
+const port = process.env.PORT || 80;
 
-async function main() {
+async function service() {
   const sendMessage = async (data) => {
     const jsonData = prettyjson.render(data, {
       noColor: true,
@@ -40,5 +43,22 @@ async function main() {
   );
 }
 
+async function main() {
+  service();
+
+  app.get('/health', (req, res) => {
+    const data = {
+      uptime: process.uptime(),
+      message: 'Ok',
+      date: new Date(),
+    };
+
+    res.status(200).send(data);
+  });
+
+  app.listen(port, () => {
+    console.log(`Binance Signals Application listening on port ${port}`);
+  });
+}
+
 main();
-console.log('Binance Signals Application Started!');

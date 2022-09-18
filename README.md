@@ -1,1 +1,1 @@
-# Binance Signals/Notifications on Telegram Bot
+# Binance (Futures) Signals/Notifications on Telegram Bot
