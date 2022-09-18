@@ -46,6 +46,10 @@ async function service() {
 async function main() {
   service();
 
+  app.get('/', (req, res) => {
+    res.send('Express on Vercel');
+  });
+
   app.get('/health', (req, res) => {
     const data = {
       uptime: process.uptime(),
