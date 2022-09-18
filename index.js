@@ -1,6 +1,8 @@
 const ejs = require('ejs');
 const express = require('express');
 const Binance = require('node-binance-api');
+const cron = require('node-cron');
+const fetch = require('node-fetch');
 const TelegramBot = require('node-telegram-bot-api');
 const prettyjson = require('prettyjson');
 const app = express();
@@ -43,11 +45,22 @@ async function service() {
   );
 }
 
+async function scheduler() {
+  cron.schedule('*/5 * * * *', async () => {
+    try {
+      await fetch(process.env.INACTIVITY_CHECK_URL);
+    } catch (err) {
+      console.log(err);
+    }
+  });
+}
+
 async function main() {
   service();
+  scheduler();
 
   app.get('/', (req, res) => {
-    res.send('Express on Vercel');
+    res.send('Running Express');
   });
 
   app.get('/health', (req, res) => {
