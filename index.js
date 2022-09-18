@@ -17,11 +17,6 @@ const bot = new TelegramBot(process.env.TELEGRAM_TOKEN);
 const port = process.env.PORT || 80;
 
 async function service() {
-  if (bot.isPolling()) {
-    await bot.stopPolling();
-  }
-  await bot.startPolling();
-
   const sendMessage = async (data) => {
     const jsonData = prettyjson.render(data, {
       noColor: true,
