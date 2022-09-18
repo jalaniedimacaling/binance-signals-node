@@ -1,1 +1,1 @@
-# binance-signals-node
+# Binance Signals/Notifications on Telegram Bot
