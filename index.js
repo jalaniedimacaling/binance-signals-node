@@ -18,12 +18,59 @@ const port = process.env.PORT || 80;
 
 async function service() {
   const sendMessage = async (data) => {
-    const jsonData = prettyjson.render(data, {
-      noColor: true,
-    });
-    const message = await ejs.renderFile('templates/message.ejs', {
-      code: jsonData,
-    });
+    console.log('-----');
+    console.log(JSON.stringify(data, null, 2)); // for checking data
+    let template;
+    let content;
+    switch (data.eventType) {
+      case 'ORDER_TRADE_UPDATE':
+        template = 'order-trade-update-msg.ejs';
+        const order = data.order;
+        const positionRisks = await binance.futuresPositionRisk();
+        const positionData = positionRisks.find((positionRisk) => {
+          return (
+            positionRisk.symbol === order.symbol &&
+            positionRisk.positionSide === order.positionSide
+          );
+        });
+        content = {
+          ...order,
+          leverage:
+            (positionData &&
+              `${
+                positionData.leverage
+              } ${positionData.marginType.toUpperCase()}`) ||
+            '',
+          margin:
+            (positionData && order.bidsNotional / positionData.leverage) || 0,
+          positionSide:
+            order.positionSide === 'BOTH' ? '' : ` ${order.positionSide}`,
+        };
+        break;
+      case 'ACCOUNT_UPDATE':
+        const updateData = data.updateData;
+        const balance = updateData.balances[0];
+        content = {
+          ...balance,
+          type: updateData.eventReasonType,
+        };
+        if (updateData.eventReasonType === 'FUNDING_FEE') {
+          template = 'account-update-funding-fee-msg.ejs';
+          break;
+        } else if (updateData.eventReasonType === 'ORDER') {
+          template = 'account-update-order-msg.ejs';
+          break;
+        }
+      default:
+        template = 'general-msg.ejs';
+        const prettyJsonData = prettyjson.render(data, {
+          noColor: true,
+        });
+        content = {
+          data: prettyJsonData,
+        };
+    }
+    const message = await ejs.renderFile(`templates/${template}`, content);
     bot.sendMessage(process.env.TELEGRAM_CHAT_ID, message, {
       parse_mode: 'HTML',
     });
