@@ -49,15 +49,19 @@ async function service() {
         break;
       case 'ACCOUNT_UPDATE':
         const updateData = data.updateData;
+        const eventReasonType = updateData.eventReasonType;
         const balance = updateData.balances[0];
         content = {
           ...balance,
-          type: updateData.eventReasonType,
+          type: eventReasonType,
         };
-        if (updateData.eventReasonType === 'FUNDING_FEE') {
+        if (eventReasonType === 'FUNDING_FEE') {
           template = 'account-update-funding-fee-msg.ejs';
           break;
-        } else if (updateData.eventReasonType === 'ORDER') {
+        } else if (eventReasonType === 'DEPOSIT') {
+          template = 'account-update-deposit-msg.ejs';
+          break;
+        } else if (eventReasonType === 'ORDER') {
           template = 'account-update-order-msg.ejs';
           break;
         }
